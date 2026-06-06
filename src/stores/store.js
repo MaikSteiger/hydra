@@ -20,6 +20,17 @@ export default function store(state, emitter) {
     emitter.emit('render')
   }
 
+  emitter.on('hydra loaded', () => {
+    state.hydra.hydra.s.forEach(source => {
+      const original = source.initVideo.bind(source)
+      source.initVideo = function(url = '', params) {
+        const normalized = new URL(url, window.location.href).href
+        if (source.src && source.src.tagName === 'VIDEO' && source.src.src === normalized) return
+        original(url, params)
+      }
+    })
+  })
+
   emitter.on('load and eval code', (code, shouldUpdateURL = true) => {
     emitter.emit('editor: load code', code)
     emitter.emit('repl: eval', code)
